@@ -1,19 +1,20 @@
 WTherm
 ======
 
-# Web connected Thermostat
+## Web connected Thermostat
 - Powered by Raspberry Pi
 - Used in combination with a regular room thermostat
 - Reads the temperature through a [HomeWizard](http://www.homewizard.nl/) smart home module
 - Uses [Pushover](https://pushover.net/) to alert you if something goes wrong
 
-# Operation
+## Operation
 - The last measured temperature, target temperature, override status, heating status, humidity and the time at the last update are stored in a MySQL database
 - thermostat.php runs every 5 minutes, controls the GPIO and updates the database
 - The web interface uses javascriptm, which interacts with the database through data.php
 
-# Installation
+## Installation
 This requires a working installation of Apache, PHP5 and MySQL
+
 1. Install [WiringPi](http://wiringpi.com/) and compile the GPIO utility
 2. Enable the PHP Phar extension
 3. Import WTherm.sql into phpMyAdmin

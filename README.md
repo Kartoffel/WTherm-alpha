@@ -27,5 +27,5 @@ This requires a working installation of Apache, PHP5 and MySQL
 9. Add the startup script `php5 /usr/local/bin/WTherm/startup.php > /dev/null` to /etc/rc.local
 10. Set the thermostat script to run every 5 minutes:
   Add `*/5 *   * * *   root    php5 /usr/local/bin/WTherm/thermostat.php >> /usr/local/bin/WTherm/wtherm.log` to /etc/crontab
-11. That's it! Try it out
+11. That's it! Try it out :)
 

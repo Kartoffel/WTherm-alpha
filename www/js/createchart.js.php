@@ -45,47 +45,47 @@ $json = preg_replace("/(('|\")%%|%%(\"|'))/",'', $json);
 $chart->load($json);
 
 $options = array(
-	title => 'Temperature', 
-	theme => 'null', 
-	legend => array(
-		position => 'in',
+	'title' => 'Temperature', 
+	'theme' => 'null', 
+	'legend' => array(
+		'position' => 'in',
 	),
-	curveType => 'none', 
-	series => array(
+	'curveType' => 'none', 
+	'series' => array(
 		0 => array(
-			color => '#3366CC', // Color for the room temperature (cooling) line
+			'color' => '#3366CC', // Color for the room temperature (cooling) line
 		),
 		1 => array(
-			color => '#DC3912', // Color for the room temperature (heating) line
+			'color' => '#DC3912', // Color for the room temperature (heating) line
 		),
 		2 => array(
-			color => '#000000', // Color for the target temperature line
+			'color' => '#000000', // Color for the target temperature line
 		),
 	),
-	chartArea => array(
-		left => 45,
-		width => '100%',
+	'chartArea' => array(
+		'left' => 45,
+		'width' => '100%',
 	),
-	vAxis => array(
-		title => 'Temperature (°C)',
-		titleTextStyle => array(
-			italic => false,
+	'vAxis' => array(
+		'title' => 'Temperature (°C)',
+		'titleTextStyle' => array(
+			'italic' => false,
 		),
-		minValue => round(($range['mintemp'] <= $range['minttemp'] ? $range['mintemp'] : $range['minttemp']) - 1.0, 0, PHP_ROUND_HALF_UP),
-		maxValue => round(($range['maxtemp'] >= $range['maxttemp'] ? $range['maxtemp'] : $range['maxttemp']) + 1.0, 0, PHP_ROUND_HALF_UP),
+		'minValue' => round(($range['mintemp'] <= $range['minttemp'] ? $range['mintemp'] : $range['minttemp']) - 1.0, 0, PHP_ROUND_HALF_UP),
+		'maxValue' => round(($range['maxtemp'] >= $range['maxttemp'] ? $range['maxtemp'] : $range['maxttemp']) + 1.0, 0, PHP_ROUND_HALF_DOWN),
 	),
-	hAxis => array(
-		title => 'Time',
-		gridlines => array(
-			count => -1,
+	'hAxis' => array(
+		'title' => 'Time',
+		'gridlines' => array(
+			'count' => -1,
 		),
-		titleTextStyle => array(
-			italic => false,
+		'titleTextStyle' => array(
+			'italic' => false,
 		),
 		
 	),
-	width => '100%',
-	height => 250,
+	'width' => '100%',
+	'height' => 250,
 );
 
 echo $chart->draw('temps', $options);
@@ -103,7 +103,7 @@ $data = array(
 );
 
 foreach($records as $record){
-	if(date("i", strtotime($record['time'])) %15 != 0) continue; // only select records for every quarter hour
+	//if(date("i", strtotime($record['time'])) %15 != 0) continue; // only select records for every quarter hour
 	$newrow = array('c' => array(
 		array('v' => '%%new Date('.(strtotime($record['time'])*1000).') %%'), //Date 
 		array('v' => $record['humidity']), //Humidity
@@ -116,41 +116,41 @@ $json = preg_replace("/(('|\")%%|%%(\"|'))/",'', $json);
 $chart->load($json);
 
 $options = array(
-	title => 'Humidity', 
-	theme => 'null', 
-	legend => array(
-		position => 'in',
+	'title' => 'Humidity', 
+	'theme' => 'null', 
+	'legend' => array(
+		'position' => 'in',
 	),
-	curveType => 'none', 
-	series => array(
+	'curveType' => 'none', 
+	'series' => array(
 		0 => array(
-			color => '#3366CC',
+			'color' => '#3366CC',
 		),
 	),
-	chartArea => array(
-		left => 45,
-		width => '100%',
+	'chartArea' => array(
+		'left' => 45,
+		'width' => '100%',
 	),
-	vAxis => array(
-		title => 'Relative humidity (%)',
-		minValue => 0,
-		maxValue => 100,
-		titleTextStyle => array(
-			italic => false,
+	'vAxis' => array(
+		'title' => 'Relative humidity (%)',
+		'minValue' => 0,
+		'maxValue' => 100,
+		'titleTextStyle' => array(
+			'italic' => false,
 		),
 	),
-	hAxis => array(
-		title => 'Time',
-		titleTextStyle => array(
-			italic => false,
+	'hAxis' => array(
+		'title' => 'Time',
+		'titleT1extStyle' => array(
+			'italic' => false,
 		),
-		gridlines => array(
+		'gridlines' => array(
 			'count' => -1,
 		),
 		
 	),
-	width => '100%', 
-	height => 250,
+	'width' => '100%', 
+	'height' => 250,
 );
 
 echo $chart->draw('humid', $options);

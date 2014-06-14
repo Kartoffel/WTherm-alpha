@@ -75,11 +75,7 @@ $options = array(
 		'width' => '100%',
 	),
 	'vAxis' => array(
-<<<<<<< HEAD
 		'title' => 'Temperature (°C)',
-=======
-		'title' => 'Temperature (Â°C)',
->>>>>>> 8f0c6003e799397e59cb8bb4c8d98afe9b8585d3
 		'titleTextStyle' => array(
 			'italic' => false,
 		),

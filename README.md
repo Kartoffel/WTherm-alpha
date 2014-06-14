@@ -13,7 +13,7 @@ WTherm
 - The web interface uses javascriptm, which interacts with the database through data.php
 
 ## Installation
-This requires a working installation of Apache, PHP5 and MySQL
+This requires a working installation of Apache, PHP5 and MySQL with CURL.
 
 1. Install [WiringPi](http://wiringpi.com/) and compile the GPIO utility
 2. Enable the PHP Phar extension
@@ -31,4 +31,8 @@ This requires a working installation of Apache, PHP5 and MySQL
 11. That's it! Try it out :)
 
 ## License
+<<<<<<< HEAD
 The source code and design files for this project are released under the MIT license. For more information, please view the LICENSE file.
+=======
+The source code and design files for this project were released under the [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/)
+>>>>>>> 8f0c6003e799397e59cb8bb4c8d98afe9b8585d3

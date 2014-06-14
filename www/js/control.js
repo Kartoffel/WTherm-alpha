@@ -1,3 +1,10 @@
+/** control.js
+ * WTherm web-connected thermostat https://github.com/NiekProductions/WTherm/
+ * Author: Niek Blankers <niek@niekproductions.com>
+ *
+ * This script is used to communicate with the WTherm database, through data.php
+ */
+
 var updateTemp;
 var updateInterval = 60; //update interval in seconds
 

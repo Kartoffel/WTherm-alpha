@@ -1,4 +1,11 @@
 <?php
+/** deluser.php
+ * WTherm web-connected thermostat https://github.com/NiekProductions/WTherm/
+ * Author: Niek Blankers <niek@niekproductions.com>
+ *
+ * run 'deluser.php [user]' to delete a user from the database
+ */
+ 
 include('db.php');
 
 if(!isset($argv[1])){

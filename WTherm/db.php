@@ -1,4 +1,11 @@
 <?php
+/** db.php
+ * WTherm web-connected thermostat https://github.com/NiekProductions/WTherm/
+ * Author: Niek Blankers <niek@niekproductions.com>
+ *
+ * Connect to the MySQL database
+ */
+ 
 include('config.php');
 
 try {

@@ -1,5 +1,12 @@
 <?php
-include('db.php');
+/** adduser.php
+ * WTherm web-connected thermostat https://github.com/NiekProductions/WTherm/
+ * Author: Niek Blankers <niek@niekproductions.com>
+ *
+ * run 'adduser.php [user] [pass]' to add a user to the database
+ */
+ 
+include('db.php'); // Connect to the database
 
 if(!isset($argv[1]) || !isset($argv[2])){
 	exit("usage: adduser.php user pass \n");
@@ -31,10 +38,12 @@ if (!$stmt) {
 	echo "User added succesfully!\n";
 }
 
-function verify($password, $hashedPassword) {
-    return crypt($password, $hashedPassword) == $hashedPassword;
-}
-
+/**
+ * Hash generation function to salt the password
+ *
+ * @param  string    $password 
+ * @return string 	 Hashed password
+ */ 
 function generateHash($password) {
     if (defined("CRYPT_BLOWFISH") && CRYPT_BLOWFISH) {
         $salt = '$2y$11$' . substr(md5(uniqid(rand(), true)), 0, 22);

@@ -32,6 +32,13 @@ if( !isset( $_SESSION['username'] )){
 	exit;
 }
 
+/**
+ * Verify the salted, hashed password.
+ *
+ * @param  String    $password    password to compare to $hashedPassword
+ * @param  String    $hashedPassword
+ * @return boolean   match
+ */ 
 function verify($password, $hashedPassword) {
     return crypt($password, $hashedPassword) == $hashedPassword;
 }

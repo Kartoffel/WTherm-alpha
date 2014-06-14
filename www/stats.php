@@ -40,7 +40,7 @@ if( !isset( $_SESSION['username'] )){ // Is the user logged in?
         
 			<h2>Graphs
 				<div class="btn-group" style="margin: 9px 0;">
-					<button type="button" id="48h" onclick="twodays()" class="btn btn-default <?=(isset($_GET['1w'])? "": "active")?>">Last 48 hours</button><button type="button" id="1w" onclick="oneweek()" class="btn btn-default <?=(isset($_GET['1w'])? "active": "")?>">Last week</button>
+					<button type="button" id="48h" onclick="oneday()" class="btn btn-default <?=(isset($_GET['1w'])? "": "active")?>">Last day</button><button type="button" id="1w" onclick="oneweek()" class="btn btn-default <?=(isset($_GET['1w'])? "active": "")?>">Last week</button>
 				</div>
 			</h2>
 			<p>

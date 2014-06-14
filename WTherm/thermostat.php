@@ -1,31 +1,47 @@
 <?php
+/** thermostat.php
+ * WTherm web-connected thermostat https://github.com/NiekProductions/WTherm/
+ * Author: Niek Blankers <niek@niekproductions.com>
+ *
+ * This file runs the thermostat. Modify the HW_sense() function to fetch your room temperature 
+ * Modify heat() to suit your central heating unit.
+ */
+
 error_reporting(E_ALL);
 ini_set("display_errors", 1);
 
-include('httpful.phar');
-include('config.php');
-include('db.php');
+include('httpful.phar'); // This code uses the HTTPful class (http://phphttpclient.com/) to fetch the current temperature and humidity from a HomeWizard (http://www.homewizard.nl/) home-automation box
+include('config.php'); // Config.php contains all of the configuration parameters
+include('db.php'); // Connect to the MySQL database
 
+/**
+ * Some initialization
+ */
 $heating;
-
 exec("gpio mode ".$CONFIG['sense_pin']." in"); //set pin as input
 exec("gpio mode ".$CONFIG['heating_pin']." out"); //set pin as output
 
 exec("gpio read ".$CONFIG['sense_pin'], $output); //read state of other thermostat
 $sense = $output[0]; // 1 if the other thermostat wants to switch on the heater
 
-$sql = "SELECT * FROM status"; // Fetch the settings
+
+/**
+ * Fetch the thermostat settings
+ */
+$sql = "SELECT * FROM status";
 $stmt = $db->prepare($sql);
 $stmt->execute();
 $status = $stmt->fetch();
-
 $targettemp = $status['TARGET_TEMP'];
 $override = $status['OVERRIDE'];
 $last_update = $status['LAST_UPDATE'];
+list($temp, $humidity) = HW_sense();
 
-list($temp, $humidity) = HW_sense(); //Fetch the temperature and humidity from the HomeWizard
-
-if(strtotime($status['LAST_UPDATE']) < strtotime("-".$CONFIG['time_unreliable']." minutes") && $temp == "fail"){ //Check if the temperature is unreliable
+/**
+ * Check the reliability of the last temperature reading
+ * If the last successful temperature reading is over $CONFIG['time_unreliable'] minutes, disable the override, push and log an error.
+ */
+if(strtotime($status['LAST_UPDATE']) < strtotime("-".$CONFIG['time_unreliable']." minutes") && $temp == "fail"){
 	$override = 0; //Disable the override
 	$sql = "UPDATE status SET OVERRIDE=0;";
 	$stmt = $db->prepare($sql);
@@ -34,7 +50,12 @@ if(strtotime($status['LAST_UPDATE']) < strtotime("-".$CONFIG['time_unreliable'].
 	error($CONFIG['errormessage']); //Log an error
 }
 
-if($override){
+/**
+ * The actual thermostat
+ */
+if($override){ 
+	if($targettemp > $CONFIG['max_temp'] || $targettemp < $CONFIG['min_temp']) $targettemp = 15.0;
+	
 	if($targettemp - $temp >= $CONFIG['temp_offset']) heat(true); //switch on heater
 	else heat(false); //switch off heater
 }else{
@@ -52,7 +73,7 @@ if($temp != "fail" && !isset($argv[1])){ // If the WTherm was able to fetch the 
 		":override" => ($override ? 1: 0),
 	));
 	if (!$stmt) {
-		error("\nPDO::errorInfo():\n");
+		error("PDO::errorInfo():");
 		error($db->errorInfo());
 	}
 }else if($temp == "fail"){
@@ -74,7 +95,12 @@ if (!$stmt) {
     error($db->errorInfo());
 }
 
-
+/**
+ * Controls heating
+ *
+ * @param  boolean  $onoff  true: switch on heating unit, false: switch it off.
+ * @return boolean  true
+ */ 
 function heat($onoff){
 	global $heating, $CONFIG;
 	
@@ -85,24 +111,48 @@ function heat($onoff){
 		exec("gpio write ".$CONFIG['heating_pin']." 1"); //heater off
 		$heating = false;
 	}
+	
+	return true;
 }
 
-function push_notification($message, $priority){ //priority: send as -2 to generate no notification/alert, -1 to always send as a quiet notification, 1 to display as high-priority and bypass the user's quiet hours, or 2 to also require confirmation from the user
+/**
+ * Sends a push notification through the Pushover(https://pushover.net/) service if something goes wrong. 
+ *
+ * @param  String   $message  What to send
+ * @param  integer  $priority send as -2 to generate no notification/alert, -1 to always send as a quiet notification, 1 to display as high-priority and bypass the user's quiet hours, or 2 to also require confirmation from the user
+ * @return boolean  true if push message was sent successfully
+ */ 
+function push_notification($message, $priority){
 	global $CONFIG;
 	if(!is_null($CONFIG['pushover_APItoken']) && !is_null($CONFIG['pushover_userkey'])){
-		curl_setopt_array($ch = curl_init(), array(
-		CURLOPT_URL => "https://api.pushover.net/1/messages.json",
-		CURLOPT_POSTFIELDS => array(
-			"token" => $CONFIG['pushover_APItoken'],
-			"user" => $CONFIG['pushover_userkey'],
-			"message" => $message,
-			"priority" => $priority,
-		)));
-		curl_exec($ch);
-		curl_close($ch);
+		try {
+			curl_setopt_array($ch = curl_init(), array(
+			CURLOPT_URL => "https://api.pushover.net/1/messages.json",
+			CURLOPT_POSTFIELDS => array(
+				"token" => $CONFIG['pushover_APItoken'],
+				"user" => $CONFIG['pushover_userkey'],
+				"message" => $message,
+				"priority" => $priority,
+			)));
+			$result = curl_exec($ch);
+			curl_close($ch);
+			if (FALSE === $result)
+				throw new Exception(curl_error($ch), curl_errno($ch));
+		} catch(Exception $e) {
+			error(sprintf(
+				'Curl failed with error #%d: %s',
+				$e->getCode(), $e->getMessage()));
+			return false;
+		}
+		return true;
 	}
 }
 
+/**
+ * Fetches temperature and humidity from a HomeWizard (http://www.homewizard.nl/)
+ *
+ * @return array($temp, $humidity) returns array("fail", "fail") if the temperature could not be fetched within the timeout period
+ */ 
 function HW_sense(){ //HomeWizard sensor values
 	global $CONFIG;
 	
@@ -128,7 +178,12 @@ function HW_sense(){ //HomeWizard sensor values
 	}
 }
 
-function error($errormsg){ // Output an error message with timestamp
+/**
+ * Output an error message with timestamp
+ *
+ * @param  String $errormsg  Error message to log
+ */ 
+function error($errormsg){
 	if(!is_string($errormsg)) $errormsg = serialize($errormsg);
 	echo "[".date("Y-m-d H:i:s")."] ".$errormsg."\r\n";
 }

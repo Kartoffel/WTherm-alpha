@@ -1,18 +1,26 @@
 <?php
+/** createchart.js.php
+ * WTherm web-connected thermostat https://github.com/NiekProductions/WTherm/
+ * Author: Niek Blankers <niek@niekproductions.com>
+ *
+ * This file outputs javascript code to work with Google Charts (https://developers.google.com/chart/?hl=nl)
+ * it uses a modified class from 'PHP class for google chart tools' (https://code.google.com/p/php-class-for-google-chart-tools/)
+ */
+ 
 header('Content-Type: application/javascript');
 header("Cache-Control: no-cache, must-revalidate"); // Tell browser not to cache this script
 header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
 include('/usr/local/bin/WTherm/db.php'); // Connect to the database
 
-// Fetch the logged values for either the last two days or the last week
-$sql = "SELECT * FROM ( SELECT @row := @row +1 AS rownum, time, temp, target_temp, humidity, heating, override FROM ( SELECT @row :=0) r, log ) ranked WHERE rownum % ".(isset($_GET['1w'])? 12: 3)." = 1 AND time >= now() - INTERVAL ".(isset($_GET['1w'])? 168: 48)." HOUR ORDER BY time ASC";
+// Fetch the logged values for either the last day or the last week
+$sql = "SELECT * FROM ( SELECT @row := @row +1 AS rownum, time, temp, target_temp, humidity, heating, override FROM ( SELECT @row :=0) r, log ) ranked WHERE rownum % ".(isset($_GET['1w'])? 12: 3)." = 1 AND time >= now() - INTERVAL ".(isset($_GET['1w'])? 168: 24)." HOUR ORDER BY time ASC";
 $stmt = $db->prepare($sql);
 $stmt->execute();
 $records = $stmt->fetchAll();
 
 // Fetch the minimum and maximum temperatures
-$sql = "SELECT MIN(temp) as mintemp, MAX(temp) as maxtemp, MIN(target_temp) as minttemp, MAX(target_temp) as maxttemp FROM log WHERE time >= now() - INTERVAL ".(isset($_GET['1w'])? 168: 48)." HOUR";
+$sql = "SELECT MIN(temp) as mintemp, MAX(temp) as maxtemp, MIN(target_temp) as minttemp, MAX(target_temp) as maxttemp FROM log WHERE time >= now() - INTERVAL ".(isset($_GET['1w'])? 168: 24)." HOUR";
 $stmt = $db->prepare($sql);
 $stmt->execute();
 $range = $stmt->fetch();
@@ -45,47 +53,47 @@ $json = preg_replace("/(('|\")%%|%%(\"|'))/",'', $json);
 $chart->load($json);
 
 $options = array(
-	title => 'Temperature', 
-	theme => 'null', 
-	legend => array(
-		position => 'in',
+	'title' => 'Temperature', 
+	'theme' => 'null', 
+	'legend' => array(
+		'position' => 'in',
 	),
-	curveType => 'none', 
-	series => array(
+	'curveType' => 'none', 
+	'series' => array(
 		0 => array(
-			color => '#3366CC', // Color for the room temperature (cooling) line
+			'color' => '#3366CC', // Color for the room temperature (cooling) line
 		),
 		1 => array(
-			color => '#DC3912', // Color for the room temperature (heating) line
+			'color' => '#DC3912', // Color for the room temperature (heating) line
 		),
 		2 => array(
-			color => '#000000', // Color for the target temperature line
+			'color' => '#000000', // Color for the target temperature line
 		),
 	),
-	chartArea => array(
-		left => 45,
-		width => '100%',
+	'chartArea' => array(
+		'left' => 45,
+		'width' => '100%',
 	),
-	vAxis => array(
-		title => 'Temperature (Â°C)',
-		titleTextStyle => array(
-			italic => false,
+	'vAxis' => array(
+		'title' => 'Temperature (°C)',
+		'titleTextStyle' => array(
+			'italic' => false,
 		),
-		minValue => round(($range['mintemp'] <= $range['minttemp'] ? $range['mintemp'] : $range['minttemp']) - 1.0, 0, PHP_ROUND_HALF_UP),
-		maxValue => round(($range['maxtemp'] >= $range['maxttemp'] ? $range['maxtemp'] : $range['maxttemp']) + 1.0, 0, PHP_ROUND_HALF_UP),
+		'minValue' => round(($range['mintemp'] <= $range['minttemp'] ? $range['mintemp'] : $range['minttemp']) - 1.0, 0, PHP_ROUND_HALF_UP),
+		'maxValue' => round(($range['maxtemp'] >= $range['maxttemp'] ? $range['maxtemp'] : $range['maxttemp']) + 1.0, 0, PHP_ROUND_HALF_DOWN),
 	),
-	hAxis => array(
-		title => 'Time',
-		gridlines => array(
-			count => -1,
+	'hAxis' => array(
+		'title' => 'Time',
+		'gridlines' => array(
+			'count' => -1,
 		),
-		titleTextStyle => array(
-			italic => false,
+		'titleTextStyle' => array(
+			'italic' => false,
 		),
 		
 	),
-	width => '100%',
-	height => 250,
+	'width' => '100%',
+	'height' => 250,
 );
 
 echo $chart->draw('temps', $options);
@@ -103,7 +111,7 @@ $data = array(
 );
 
 foreach($records as $record){
-	if(date("i", strtotime($record['time'])) %15 != 0) continue; // only select records for every quarter hour
+	//if(date("i", strtotime($record['time'])) %15 != 0) continue; // only select records for every quarter hour
 	$newrow = array('c' => array(
 		array('v' => '%%new Date('.(strtotime($record['time'])*1000).') %%'), //Date 
 		array('v' => $record['humidity']), //Humidity
@@ -116,41 +124,41 @@ $json = preg_replace("/(('|\")%%|%%(\"|'))/",'', $json);
 $chart->load($json);
 
 $options = array(
-	title => 'Humidity', 
-	theme => 'null', 
-	legend => array(
-		position => 'in',
+	'title' => 'Humidity', 
+	'theme' => 'null', 
+	'legend' => array(
+		'position' => 'in',
 	),
-	curveType => 'none', 
-	series => array(
+	'curveType' => 'none', 
+	'series' => array(
 		0 => array(
-			color => '#3366CC',
+			'color' => '#3366CC',
 		),
 	),
-	chartArea => array(
-		left => 45,
-		width => '100%',
+	'chartArea' => array(
+		'left' => 45,
+		'width' => '100%',
 	),
-	vAxis => array(
-		title => 'Relative humidity (%)',
-		minValue => 0,
-		maxValue => 100,
-		titleTextStyle => array(
-			italic => false,
+	'vAxis' => array(
+		'title' => 'Relative humidity (%)',
+		'minValue' => 0,
+		'maxValue' => 100,
+		'titleTextStyle' => array(
+			'italic' => false,
 		),
 	),
-	hAxis => array(
-		title => 'Time',
-		titleTextStyle => array(
-			italic => false,
+	'hAxis' => array(
+		'title' => 'Time',
+		'titleT1extStyle' => array(
+			'italic' => false,
 		),
-		gridlines => array(
+		'gridlines' => array(
 			'count' => -1,
 		),
 		
 	),
-	width => '100%', 
-	height => 250,
+	'width' => '100%', 
+	'height' => 250,
 );
 
 echo $chart->draw('humid', $options);
@@ -168,7 +176,7 @@ function drawCharts(){
 	drawChart2();
 }
 
-function twodays(){
+function oneday(){
 	var query = window.location.search, deviceParam = "1w=";
 	var url = window.location.href.replace(query, "");
 	window.location.href = url;
@@ -306,4 +314,5 @@ class Chart {
         
 }
 ?>
+
 

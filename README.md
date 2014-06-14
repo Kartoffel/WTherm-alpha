@@ -30,3 +30,5 @@ This requires a working installation of Apache, PHP5 and MySQL
   Add `*/5 *   * * *   root    php5 /usr/local/bin/WTherm/thermostat.php >> /usr/local/bin/WTherm/wtherm.log` to /etc/crontab
 11. That's it! Try it out :)
 
+## License
+The source code and design files for this project are released under the MIT license. For more information, please view the LICENSE file.

@@ -1,4 +1,11 @@
 <?php
+/** config.php
+ * WTherm web-connected thermostat https://github.com/NiekProductions/WTherm/
+ * Author: Niek Blankers <niek@niekproductions.com>
+ *
+ * This file contains all of the settings.
+ */
+ 
 $CONFIG = array(
 	"hw_ip" => "x.x.x.x", //Homewizard IP address
 	"hw_pw" => "password", //Homewizard password

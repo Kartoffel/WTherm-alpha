@@ -6,7 +6,10 @@ if( !isset( $_SESSION['username'] )){ // Is the user logged in?
 	exit;
 }
 ?>
-
+<!--
+	This is the dashboard page for the WTherm web-connected thermostat https://github.com/NiekProductions/WTherm/
+	Author: Niek Blankers <niek@niekproductions.com>
+-->
 <!DOCTYPE HTML>
 <html lang="en">
 <head>

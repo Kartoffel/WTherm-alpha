@@ -1,5 +1,5 @@
 <?php
-/** createchart.js.php
+/** createchart-archive.js.php
  * WTherm web-connected thermostat https://github.com/NiekProductions/WTherm/
  * Author: Niek Blankers <niek@niekproductions.com>
  *
@@ -13,27 +13,26 @@ header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // Date in the past
 
 include('/usr/local/bin/WTherm/db.php'); // Connect to the database
 
-// Fetch the logged values the last day
-$sql = "SELECT * FROM ( SELECT @row := @row +1 AS rownum, time, temp, target_temp, humidity, heating, override FROM ( SELECT @row :=0) r, log ) ranked WHERE rownum % 3 = 1 AND time >= now() - INTERVAL 24 HOUR ORDER BY time ASC";
+// Fetch the archived values for the last week (except for the last day)
+$sql = "SELECT * FROM archive WHERE `time` > DATE_SUB(NOW(), INTERVAL 7 DAY) AND `time` < DATE_SUB(NOW(), INTERVAL 1 DAY) ORDER BY time ASC";
 $stmt = $db->prepare($sql);
 $stmt->execute();
 $records = $stmt->fetchAll();
 
-
-// Fetch the minimum and maximum temperatures
-$sql = "SELECT MIN(temp) as mintemp, MAX(temp) as maxtemp, MIN(target_temp) as minttemp, MAX(target_temp) as maxttemp FROM log WHERE time >= now() - INTERVAL 24 HOUR";
+// Fetch the logged values for the last day
+$sql = "SELECT `time`, MIN(`temp`) as min_temp, MAX(`temp`) as max_temp, MIN(`outside_temp`) as outside_min_temp, MAX(`outside_temp`) as outside_max_temp, MIN(`humidity`) as min_humidity, MAX(`humidity`) as max_humidity FROM log WHERE `time` > DATE_SUB(NOW(), INTERVAL 1 DAY) GROUP BY DATE(`time`), HOUR(`time`) ORDER BY `time` ASC";
 $stmt = $db->prepare($sql);
 $stmt->execute();
-$range = $stmt->fetch();
+$records2 = $stmt->fetchAll();
+
+$records = array_merge($records, $records2);
 
 $chart = new Chart('LineChart');
 
 $data = array(
         'cols' => array(
                 array('id' => '', 'label' => 'Date', 'type' => 'datetime', 'role' => 'domain'), //Date
-                array('id' => '', 'label' => 'Room (cooling)', 'type' => 'number', 'role' => 'data'), //Room temp (cooling)
-				array('id' => '', 'label' => 'Room (heating)', 'type' => 'number', 'role' => 'data'), //Room temp (heating)
-                array('id' => '', 'label' => 'Target', 'type' => 'number', 'role' => 'data'), //Target temp
+                array('id' => '', 'label' => 'Room', 'type' => 'number', 'role' => 'data'), //Room temp
         ),
         'rows' => array(
         )
@@ -42,9 +41,7 @@ $data = array(
 foreach($records as $record){
 	$newrow = array('c' => array(
 		array('v' => '%%new Date('.(strtotime($record['time'])*1000).') %%'), //Date 
-		array('v' => ($record['heating'] ? '%%null%%' : $record['temp'])), //Room temp (cooling)
-		array('v' => ($record['heating'] ? $record['temp'] : '%%null%%')), //Room temp (heating)
-		array('v' => ($record['override']? $record['target_temp']: '%%null%%')), //Target temp
+		array('v' => round(($record['min_temp']+$record['max_temp'])/2,1)), //Room temp
 	));
 	array_push($data['rows'], $newrow);
 }
@@ -67,9 +64,6 @@ $options = array(
 		1 => array(
 			'color' => '#DC3912', // Color for the room temperature (heating) line
 		),
-		2 => array(
-			'color' => '#000000', // Color for the target temperature line
-		),
 	),
 	'chartArea' => array(
 		'left' => 45,
@@ -80,10 +74,10 @@ $options = array(
 		'titleTextStyle' => array(
 			'italic' => false,
 		),
-		'viewWindow' => array(
+/*		'viewWindow' => array(
 			'min' => round(($range['mintemp'] <= $range['minttemp'] ? $range['mintemp'] : $range['minttemp']) - 1.0, 0, PHP_ROUND_HALF_UP),
 			'max' => round(($range['maxtemp'] >= $range['maxttemp'] ? $range['maxtemp'] : $range['maxttemp']) + 1.5, 0, PHP_ROUND_HALF_DOWN),
-		),
+		),*/
 	),
 	'hAxis' => array(
 		'title' => 'Time',
@@ -114,10 +108,9 @@ $data = array(
 );
 
 foreach($records as $record){
-	//if(date("i", strtotime($record['time'])) %15 != 0) continue; // only select records for every quarter hour
 	$newrow = array('c' => array(
 		array('v' => '%%new Date('.(strtotime($record['time'])*1000).') %%'), //Date 
-		array('v' => $record['humidity']), //Humidity
+		array('v' => round(($record['min_humidity'] + $record['max_humidity'])/2,1)), //Humidity
 	));
 	array_push($data['rows'], $newrow);
 }
@@ -144,8 +137,8 @@ $options = array(
 	),
 	'vAxis' => array(
 		'title' => 'Relative humidity (%)',
-		'minValue' => 0,
-		'maxValue' => 100,
+/*		'minValue' => 0,
+		'maxValue' => 100,*/
 		'titleTextStyle' => array(
 			'italic' => false,
 		),

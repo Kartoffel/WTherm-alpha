@@ -5,11 +5,13 @@
  *
  * This file contains all of the settings.
  */
- 
+
 $CONFIG = array(
 	"hw_ip" => "x.x.x.x", //Homewizard IP address
 	"hw_pw" => "password", //Homewizard password
 	"hw_sid" => 1, //Homewizard temperature sensor ID
+	"outside_temp" => false, //Enable or disable the outside temperature sensor
+	"hw_s2id" => 2, //Homewizard outside temperature sensor ID
 	"db_server" => "localhost", // MySQL server
 	"db_name" => "WTherm", // Database name
 	"db_user" => "username", // Database username

@@ -23,7 +23,7 @@ if( !isset( $_SESSION['username'] )){ // Is the user logged in?
 <link rel="shortcut icon" type="image/x-icon" href="WTherm-icon.ico">
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script type="text/javascript">google.load('visualization', '1.0', {'packages':['corechart']});</script>
-<script type="text/javascript" src="js/createchart.js.php<?=(isset($_GET['1w'])? "?1w=true": "")?>"></script>
+<script type="text/javascript" src="js/createchart<?=(isset($_GET['1w'])? "-archive": "")?><?=(isset($_GET['1y'])? "-archive-y": "")?>.js.php"></script>
 </head>
 <body>
 <div class="container">
@@ -40,7 +40,9 @@ if( !isset( $_SESSION['username'] )){ // Is the user logged in?
         
 			<h2>Graphs
 				<div class="btn-group" style="margin: 9px 0;">
-					<button type="button" id="48h" onclick="oneday()" class="btn btn-default <?=(isset($_GET['1w'])? "": "active")?>">Last day</button><button type="button" id="1w" onclick="oneweek()" class="btn btn-default <?=(isset($_GET['1w'])? "active": "")?>">Last week</button>
+					<a href="stats.php" class="btn btn-default <?=((isset($_GET['1w']) || isset($_GET['1y']))? "": "active")?>">Last day</a>
+					<a href="stats.php?1w=true" class="btn btn-default <?=(isset($_GET['1w'])? "active": "")?>">Last week</a>
+					<a href="stats.php?1y=true" class="btn btn-default <?=(isset($_GET['1y'])? "active": "")?>">Last year</a>
 				</div>
 			</h2>
 			<p>

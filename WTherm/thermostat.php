@@ -35,7 +35,9 @@ $status = $stmt->fetch();
 $targettemp = $status['TARGET_TEMP'];
 $override = $status['OVERRIDE'];
 $last_update = $status['LAST_UPDATE'];
-list($temp, $humidity) = HW_sense();
+
+list($temp, $humidity) = HW_sense($CONFIG['hw_sid']);
+if($CONFIG['outside_temp']) list($outside_temp, $outside_humidity) = HW_sense($CONFIG['hw_s2id']); 
 
 /**
  * Check the reliability of the last temperature reading
@@ -63,10 +65,11 @@ if($override){
 }
 
 if($temp != "fail" && !isset($argv[1])){ // If the WTherm was able to fetch the temperature and the script hasn't been passed any variables, log the values
-	$sql = "INSERT INTO log (temp, target_temp, humidity, heating, override) VALUES (:temp, :targettemp, :humidity, :heating, :override)";
+	$sql = "INSERT INTO log (temp, outside_temp, target_temp, humidity, heating, override) VALUES (:temp, :outside_temp, :targettemp, :humidity, :heating, :override)";
 	$stmt = $db->prepare($sql);
 	$stmt->execute(array(
 		":temp" => $temp,
+		":outside_temp" => ($CONFIG['outside_temp'] ? $outside_temp : 0.0),
 		":targettemp" => $targettemp,
 		":humidity" => $humidity,
 		":heating" => ($heating ? 1 : 0),
@@ -151,9 +154,10 @@ function push_notification($message, $priority){
 /**
  * Fetches temperature and humidity from a HomeWizard (http://www.homewizard.nl/)
  *
- * @return array($temp, $humidity) returns array("fail", "fail") if the temperature could not be fetched within the timeout period
+ * @param  int  $sid   HomeWizard sensor ID
+ * @return array($temp, $humidity) -- returns array("fail", "fail") if the temperature could not be fetched within the timeout period
  */ 
-function HW_sense(){ //HomeWizard sensor values
+function HW_sense($sid){ //HomeWizard sensor values
 	global $CONFIG;
 	
 	$uri = $CONFIG['hw_ip']."/".$CONFIG['hw_pw']."/telist";
@@ -168,8 +172,8 @@ function HW_sense(){ //HomeWizard sensor values
 	if($response->code == 200){
 		$body = $response->raw_body;
 		$data = json_decode($body, true);
-		$temp = $data['response'][$CONFIG['hw_sid']]['te'];
-		$humidity = $data['response'][$CONFIG['hw_sid']]['hu'];
+		$temp = $data['response'][$sid]['te'];
+		$humidity = $data['response'][$sid]['hu'];
 		if(!($temp = floatval($temp))) $temp = "fail"; //check if the temperature is valid, not 'null' or something else
 		if(!($humidity = intval($humidity))) $humidity = "fail";
 		return array($temp, $humidity);

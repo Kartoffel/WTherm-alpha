@@ -163,7 +163,7 @@ function HW_sense($sid){ //HomeWizard sensor values
         $uri = $CONFIG['hw_ip']."/".$CONFIG['hw_pw']."/telist";
         try {
                 $response = \Httpful\Request::get($uri)
-                        ->timeout(5)
+                        ->timeout(30)
                         ->send();
         }catch (Exception $e) {
                 //echo 'Caught exception: '.$e->getMessage();

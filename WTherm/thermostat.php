@@ -158,29 +158,30 @@ function push_notification($message, $priority){
  * @return array($temp, $humidity) -- returns array("fail", "fail") if the temperature could not be fetched within the timeout period
  */ 
 function HW_sense($sid){ //HomeWizard sensor values
-	global $CONFIG;
-	
-	$uri = $CONFIG['hw_ip']."/".$CONFIG['hw_pw']."/telist";
-	try {
-		$response = \Httpful\Request::get($uri)
-			->timeout(5)
-			->send();
-	}catch (Exception $e) {
-		//echo 'Caught exception: '.$e->getMessage();
-		return array("fail", "fail");
-	}
-	if($response->code == 200){
-		$body = $response->raw_body;
-		$data = json_decode($body, true);
-		$temp = $data['response'][$sid]['te'];
-		$humidity = $data['response'][$sid]['hu'];
-		if(!($temp = floatval($temp))) $temp = "fail"; //check if the temperature is valid, not 'null' or something else
-		if(!($humidity = intval($humidity))) $humidity = "fail";
-		return array($temp, $humidity);
-	}else{
-		return array("fail", "fail");
-	}
+        global $CONFIG;
+
+        $uri = $CONFIG['hw_ip']."/".$CONFIG['hw_pw']."/telist";
+        try {
+                $response = \Httpful\Request::get($uri)
+                        ->timeout(5)
+                        ->send();
+        }catch (Exception $e) {
+                //echo 'Caught exception: '.$e->getMessage();
+                return array("fail", "fail");
+        }
+        if($response->code == 200){
+                $body = $response->raw_body;
+                $data = json_decode($body, true);
+                $temp = isset($data['response'][$sid]['te']) ? $data['response'][$sid]['te'] : "fail";
+                $humidity = isset($data['response'][$sid]['hu']) ? $data['response'][$sid]['hu'] : "fail";
+                if(!($temp = floatval($temp))) $temp = "fail"; //check if the temperature is valid, not 'null' or something else
+                if(!($humidity = intval($humidity))) $humidity = "fail";
+                return array($temp, $humidity);
+        }else{
+                return array("fail", "fail");
+        }
 }
+
 
 /**
  * Output an error message with timestamp
